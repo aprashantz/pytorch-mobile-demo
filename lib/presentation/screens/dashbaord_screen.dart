@@ -76,7 +76,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             Text(
                                               state.predictionData == null
                                                   ? "null"
-                                                  : "Score: ${state.predictionData![index].score}",
+                                                  : "Score: ${state.predictionData![index].score.toStringAsFixed(2)}",
                                               style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.red),

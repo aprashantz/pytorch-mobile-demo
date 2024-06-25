@@ -43,6 +43,7 @@ dependencies:
   fluttertoast: ^8.2.5
   image: ^4.0.17
   image_picker: ^1.0.8
+  flutter_isolate: ^2.0.4
 
 dev_dependencies:
   flutter_test:
