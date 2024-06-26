@@ -1,36 +1,46 @@
-import 'dart:isolate';
-
 import 'package:camera/camera.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_isolate/flutter_isolate.dart';
-import 'package:learn_pt/cubit/image_processing_cubit/camera_serialize.dart';
-import 'package:learn_pt/cubit/image_processing_cubit/isolate_data_model.dart';
-import 'package:learn_pt/cubit/image_processing_cubit/isolates.dart';
-import 'package:pytorch_lite/pytorch_lite.dart';
 import 'package:learn_pt/cubit/image_processing_cubit/image_processing_state.dart';
+import 'package:pytorch_lite/pytorch_lite.dart';
 
 class ImageProcessingCubit extends Cubit<ImageProcessingState> {
   ImageProcessingCubit() : super(NotStartedState()) {
     initializeModel();
   }
 
-  ModelObjectDetection? objectModel;
+  // ModelObjectDetection? objectModel;
   DateTime lastDetectionPerformed = DateTime.now();
   bool _isProcessing = false;
   int detectionThrottlingPeriodInMilliseconds = 300;
 
+  List<int> predictionTimes = [];
+  int predictionCount = 0;
+
+  ClassificationModel? _imageModel;
+
+  final int _camFrameRotation = 0;
+
   void initializeModel() async {
     try {
-      objectModel = await PytorchLite.loadObjectDetectionModel(
-        "assets/yolov5s.torchscript",
-        80,
-        640,
-        640,
-        labelPath: "assets/labels_objectDetection_Coco.txt",
+      _imageModel = await PytorchLite.loadClassificationModel(
+        'assets/model_classification.pt',
+        224,
+        224,
+        1000,
+        labelPath: 'assets/label_classification_imageNet.txt',
       );
+      // objectModel = await PytorchLite.loadObjectDetectionModel(
+      //   'assets/kit.torchscript', 1, 640, 640,
+      //   labelPath: 'assets/kit_labels.txt',
+
+      //   // "assets/yolov5s.torchscript",
+      //   // 80,
+      //   // 640,
+      //   // 640,
+      //   // labelPath: "assets/labels_objectDetection_Coco.txt",
+      // );
     } catch (e) {
       emit(ErrorPredictingState(errorMsg: "Error loading model: $e"));
     }
@@ -52,9 +62,13 @@ class ImageProcessingCubit extends Cubit<ImageProcessingState> {
             // if (rootIsolateToken != null) {
             DateTime beforeP = DateTime.now();
 
-            List<ResultObjectDetection>? prediction =
-                await objectModel?.getCameraImagePrediction(cameraImage, 90,
-                    minimumScore: 0.2, iOUThreshold: 0.2);
+            String prediction = await _imageModel!
+                .getCameraImagePrediction(cameraImage, _camFrameRotation);
+
+            // List<ResultObjectDetection>? prediction =
+            //     await objectModel?.getCameraImagePrediction(cameraImage, 90,
+            //         minimumScore: 0.2, iOUThreshold: 0.2);
+
             //     await Isolate.run<List<ResultObjectDetection>?>(() async {
             //   return await objectModel?.getCameraImagePrediction(
             //       cameraImage, 90,
@@ -74,6 +88,20 @@ class ImageProcessingCubit extends Cubit<ImageProcessingState> {
             // );
 
             DateTime afterP = DateTime.now();
+
+            int predictionTime = afterP.difference(beforeP).inMilliseconds;
+            predictionTimes.add(predictionTime);
+            predictionCount++;
+            print('$predictionTimes');
+
+            if (predictionCount % 10 == 0) {
+              int totalTime =
+                  predictionTimes.fold(0, (sum, time) => sum + time);
+              double averageTime = totalTime / predictionTimes.length;
+              print("AVG TIME FOR LAST 10 PRED:::::::::::::: $averageTime");
+              predictionTimes.clear();
+            }
+
             print(
                 "debugCheckRespTime: time diff between afterP and beforeP: ${afterP.difference(beforeP).inMilliseconds}");
 

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:learn_pt/learn_pt_app.dart';
 
 void main() async {

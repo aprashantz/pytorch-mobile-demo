@@ -1,11 +1,10 @@
-import 'package:flutter/material.dart';
 import 'package:camera/camera.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:learn_pt/cubit/camera_ready_cubit/camera_ready_cubit.dart';
 import 'package:learn_pt/cubit/camera_ready_cubit/camera_ready_state.dart';
 import 'package:learn_pt/cubit/image_processing_cubit/image_processing_cubit.dart';
 import 'package:learn_pt/cubit/image_processing_cubit/image_processing_state.dart';
-import 'package:pytorch_lite/pytorch_lite.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -49,8 +48,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   BlocBuilder<ImageProcessingCubit, ImageProcessingState>(
                     builder: (context, state) {
                       if (state is PredictionReadyState) {
-                        return (state.predictionData != null &&
-                                (state.predictionData ?? []).isNotEmpty)
+                        return (state.predictionData != null)
                             ? Container(
                                 color: Colors.white,
                                 child: Padding(
@@ -65,7 +63,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             Text(
                                               state.predictionData == null
                                                   ? "null"
-                                                  : "Label: ${state.predictionData![index].className ?? ""}",
+                                                  : "Label: ${state.predictionData ?? "EMPTY"}",
                                               style: const TextStyle(
                                                   fontWeight: FontWeight.bold,
                                                   color: Colors.red),
@@ -73,14 +71,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                                             const SizedBox(
                                               width: 10,
                                             ),
-                                            Text(
-                                              state.predictionData == null
-                                                  ? "null"
-                                                  : "Score: ${state.predictionData![index].score.toStringAsFixed(2)}",
-                                              style: const TextStyle(
-                                                  fontWeight: FontWeight.bold,
-                                                  color: Colors.red),
-                                            ),
+                                            // Text(
+                                            //   state.predictionData == null
+                                            //       ? "null"
+                                            //       : "Score: ${state.predictionData![index].score.toStringAsFixed(2)}",
+                                            //   style: const TextStyle(
+                                            //       fontWeight: FontWeight.bold,
+                                            //       color: Colors.red),
+                                            // ),
                                           ],
                                         ),
                                       );

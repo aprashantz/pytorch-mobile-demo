@@ -1,11 +1,10 @@
-import 'package:pytorch_lite/pytorch_lite.dart';
-
 abstract class ImageProcessingState {}
 
 class NotStartedState extends ImageProcessingState {}
 
 class PredictionReadyState extends ImageProcessingState {
-  List<ResultObjectDetection>? predictionData;
+  // List<ResultObjectDetection>? predictionData;
+  String? predictionData;
 
   PredictionReadyState({required this.predictionData});
 }
